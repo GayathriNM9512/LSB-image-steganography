@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <string.h>     
+#include <string.h>
 #include "encode.h"
 #include "types.h"
-#include "common.h"     
+#include "common.h"
 
 /* Function Definitions */
 
@@ -30,7 +30,7 @@ uint get_image_size_for_bmp(FILE *fptr_image)
     return width * height * 3;
 }
 
-/* 
+/*
  * Get File pointers for i/p and o/p files
  * Inputs: Src Image file, Secret file and
  * Stego Image file
@@ -44,10 +44,10 @@ Status open_files(EncodeInfo *encInfo)
     // Do Error handling
     if (encInfo->fptr_src_image == NULL)
     {
-    	perror("fopen");
-    	fprintf(stderr, "ERROR: Unable to open file %s\n", encInfo->src_image_fname);
+        perror("fopen");
+        fprintf(stderr, "ERROR: Unable to open file %s\n", encInfo->src_image_fname);
 
-    	return e_failure;
+        return e_failure;
     }
 
     // Secret file
@@ -55,10 +55,10 @@ Status open_files(EncodeInfo *encInfo)
     // Do Error handling
     if (encInfo->fptr_secret == NULL)
     {
-    	perror("fopen");
-    	fprintf(stderr, "ERROR: Unable to open file %s\n", encInfo->secret_fname);
+        perror("fopen");
+        fprintf(stderr, "ERROR: Unable to open file %s\n", encInfo->secret_fname);
 
-    	return e_failure;
+        return e_failure;
     }
 
     // Stego Image file
@@ -66,10 +66,10 @@ Status open_files(EncodeInfo *encInfo)
     // Do Error handling
     if (encInfo->fptr_stego_image == NULL)
     {
-    	perror("fopen");
-    	fprintf(stderr, "ERROR: Unable to open file %s\n", encInfo->stego_image_fname);
+        perror("fopen");
+        fprintf(stderr, "ERROR: Unable to open file %s\n", encInfo->stego_image_fname);
 
-    	return e_failure;
+        return e_failure;
     }
 
     // No failure return e_success
@@ -80,14 +80,14 @@ Status check_capacity(EncodeInfo *encInfo)
 {
     int size_src_image = get_image_size_for_bmp(encInfo->fptr_src_image);
 
-    //Move the secret_fptr to the last
+    // Move the secret file pointer to the end to find its size
     fseek(encInfo->fptr_secret, 0, SEEK_END);
 
     encInfo->size_secret_file = ftell(encInfo->fptr_secret);
 
     int data_size = strlen(MAGIC_STRING) + sizeof(int) + strlen(encInfo->extn_secret_file) + sizeof(int) + encInfo->size_secret_file;
 
-    if(data_size*8 < size_src_image)
+    if (data_size * 8 < size_src_image)
     {
         return e_success;
     }
@@ -155,7 +155,7 @@ Status copy_bmp_header(FILE *fptr_src_image, FILE *fptr_dest_image)
 
 Status encode_magic_string(char *magic_string, EncodeInfo *encInfo)
 {
-    encode_string_to_image(magic_string,strlen(magic_string),encInfo);
+    encode_string_to_image(magic_string, strlen(magic_string), encInfo);
     return e_success;
 }
 
@@ -192,6 +192,7 @@ Status encode_secret_file_data(EncodeInfo *encInfo)
     encode_string_to_image(str, encInfo->size_secret_file, encInfo);
     return e_success;
 }
+
 Status copy_remaining_img_data(FILE *fptr_src, FILE *fptr_dest)
 {
     char ch;
@@ -203,9 +204,10 @@ Status copy_remaining_img_data(FILE *fptr_src, FILE *fptr_dest)
 
     return e_success;
 }
+
 Status do_encoding(EncodeInfo *encInfo)
 {
-    if(open_files(encInfo) == e_success)
+    if (open_files(encInfo) == e_success)
     {
         printf("INFO: Open files is completed\n");
     }
@@ -215,7 +217,7 @@ Status do_encoding(EncodeInfo *encInfo)
         return e_failure;
     }
 
-    if(check_capacity(encInfo) == e_success)
+    if (check_capacity(encInfo) == e_success)
     {
         printf("INFO: Image has enough capacity\n");
     }
@@ -250,7 +252,7 @@ Status do_encoding(EncodeInfo *encInfo)
 void encode_string_to_image(const char *str, int size, EncodeInfo *encInfo)
 {
     char arr[8];
-    for(int i = 0; i < size ; i++)
+    for (int i = 0; i < size; i++)
     {
         fread(arr, 8, 1, encInfo->fptr_src_image);
         encode_byte_to_lsb(str[i], arr);
@@ -260,7 +262,7 @@ void encode_string_to_image(const char *str, int size, EncodeInfo *encInfo)
 
 void encode_byte_to_lsb(char ch, char *arr)
 {
-    for(int i = 0; i < 8; i++)
+    for (int i = 0; i < 8; i++)
     {
         char get = (ch >> i) & 1;
         arr[i] = arr[i] & (~1);
@@ -270,7 +272,7 @@ void encode_byte_to_lsb(char ch, char *arr)
 
 void encode_int_to_image(int size, char *arr)
 {
-    for(int i = 0; i < 32; i++)
+    for (int i = 0; i < 32; i++)
     {
         char get = (size >> i) & 1;
         arr[i] = arr[i] & (~1);
